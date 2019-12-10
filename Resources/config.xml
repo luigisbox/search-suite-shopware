@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/5.3/engine/Shopware/Components/Plugin/schema/config.xsd">
+    <elements>
+        <element type="text" scope="locale">
+            <name>luigisBoxScriptUrl</name>
+            <label lang="en">Luigi's Box script URL</label>
+            <description lang="en">
+                Your Luigi's Box script URL is in the Luigi's Box Dashboard.
+                Ie. https://scripts.luigisbox.com/LBX-XXXXX.js
+            </description>
+        </element>
+
+        <element type="boolean" scope="locale">
+            <name>luigisBoxCatalogSynchronization</name>
+            <label lang="en">Enable catalog synchronization</label>
+            <value>false</value>
+        </element>
+
+        <element type="text" scope="locale">
+            <name>luigisBoxTrackerID</name>
+            <label lang="en">Tracker ID</label>
+            <description lang="en">
+                Your Tracker ID in the Luigi's Box Dashboard.
+            </description>
+        </element>
+
+        <element type="text" scope="locale">
+            <name>luigisBoxApiKey</name>
+            <label lang="en">API key</label>
+            <description lang="en">
+                You can find API key in the Luigi's Box Dashboard.
+            </description>
+        </element>
+
+    </elements>
+</config>
