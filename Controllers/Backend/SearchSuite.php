@@ -1,21 +1,16 @@
 <?php
 
-namespace LuigisboxSearchSuite;
-
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Request;
 use GuzzleHttp\Stream\Stream;
-use Shopware\Components\Plugin;
-use Shopware\Components\Routing\Context;
-use Shopware\Components\Routing\Router;
-use Shopware\Models\Article\Article;
 use LuigisboxSearchSuite\Models\Helper as H;
+use \Shopware\Components\CSRFWhitelistAware;
+use Shopware\Components\Routing\Context;
+use Shopware\Models\Article\Article;
 use Shopware\Models\Shop\Shop;
 
-
-class LuigisboxSearchSuite extends Plugin
+class Shopware_Controllers_Backend_SearchSuite extends Enlight_Controller_Action implements CSRFWhitelistAware
 {
-    const SCRIPT_URL_KEY = 'luigisBoxScriptUrl';
     const SYNC_ENABLED_KEY = 'luigisBoxCatalogSynchronization';
     const API_KEY = 'luigisBoxApiKey';
     const TRACKER_ID_KEY = 'luigisBoxTrackerID';
@@ -32,22 +27,46 @@ class LuigisboxSearchSuite extends Plugin
 
     const LOGFILE = 'update.txt';
 
-    private $router;
+    protected $logs = '';
 
-    public function install(Plugin\Context\InstallContext $context)
+    public function indexAction()
     {
-        parent::install($context);
 
-        H::setIndexInvalidationTimestamp($this->getLogFilePath());
     }
 
-    public static function getSubscribedEvents()
+    public function listAction()
+    {
+        $filePath = $this->getLogFilePath();
+
+        $this->logs = '';
+
+        if (!$this->isConfigured() || H::isIndexRunning($filePath)) {
+            $this->writeLog('Prevent indexing.');
+            return;
+        }
+
+        H::markIndexRunning($filePath);
+
+        $this->allContentUpdate();
+
+        H::markIndexFinished($filePath);
+
+        $this->View()->assign([
+            'logs' => $this->logs,
+        ]);
+    }
+
+    public function getWhitelistedCSRFActions()
     {
         return [
-            'Enlight_Controller_Action_PreDispatch' => 'addScript',
-            'Shopware_CronJob_SendToLuigisBoxApi' => 'sendProductsToLB',
-            'Enlight_Controller_Action_PostDispatch_Backend_Article' => 'singleProductUpdate'
+            'index'
         ];
+    }
+
+    public function postDispatch()
+    {
+        $csrfToken = $this->container->get('BackendSession')->offsetGet('X-CSRF-Token');
+        $this->View()->assign([ 'csrfToken' => $csrfToken ]);
     }
 
     public function isConfigured()
@@ -84,57 +103,10 @@ class LuigisboxSearchSuite extends Plugin
         return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::TRACKER_ID_KEY);
     }
 
-    public function getScriptUrl()
-    {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::SCRIPT_URL_KEY);
-    }
-
     public function getLogFilePath()
     {
-        return $this->getPath() . '/' . self::LOGFILE;
-    }
-
-    public function addScript(\Enlight_Controller_ActionEventArgs $args)
-    {
-        $controller = $args->get('subject');
-        $view = $controller->View();
-
-        $view->addTemplateDir($this->getPath() . '/Resources/views');
-
-        $scriptURL = $this->getScriptUrl();
-
-        $view->assign('luigisBoxScriptUrl', $scriptURL);
-    }
-
-    public function singleProductUpdate(\Enlight_Event_EventArgs $args)
-    {
-        $subject = $args->getSubject();
-        $request = $subject->Request();
-
-        $articleId = $request->getParam('articleId', null);
-
-        if (!$articleId) {
-            return;
-        }
-
-        $this->singleContentUpdate($articleId);
-    }
-
-
-    public function sendProductsToLB(\Shopware_Components_Cron_CronJob $job)
-    {
-        $filePath = $this->getLogFilePath();
-
-        if (!$this->isConfigured() || H::isIndexRunning($filePath)) {
-            $this->writeLog('Prevent indexing.');
-            return;
-        }
-
-        H::markIndexRunning($filePath);
-
-        $this->allContentUpdate();
-
-        H::markIndexFinished($filePath);
+        $plugin = $this->container->get('kernel')->getPlugins()['LuigisboxSearchSuite'];
+        return $plugin->getPath() . ' / ' . self::LOGFILE;
     }
 
     private function getArticleData($id = null)
@@ -222,7 +194,7 @@ class LuigisboxSearchSuite extends Plugin
 
         if (!empty($product['images'])) {
             $image = $this->getMainImage($product['images']);
-            $mediaUrl = $mediaService->getUrl('media/image/' . $image['path'] . '.' . $image['extension']);
+            $mediaUrl = $mediaService->getUrl('media / image / ' . $image['path'] . ' . ' . $image['extension']);
             if (!empty($mediaUrl)) {
                 $data['image_link'] = $mediaUrl;
             }
@@ -283,7 +255,7 @@ class LuigisboxSearchSuite extends Plugin
     private function getPropertiesOptions()
     {
         $queryBuilder = $this->container->get('dbal_connection')->createQueryBuilder();
-        $queryBuilder->select('*')
+        $queryBuilder->select(' * ')
             ->from('s_filter_options');
 
         $data = $queryBuilder->execute()->fetchAll();
@@ -300,7 +272,7 @@ class LuigisboxSearchSuite extends Plugin
     private function getAttributeOptions()
     {
         $queryBuilder = $this->container->get('dbal_connection')->createQueryBuilder();
-        $queryBuilder->select('*')
+        $queryBuilder->select(' * ')
             ->from('s_attribute_configuration');
 
         $data = $queryBuilder->execute()->fetchAll();
@@ -375,10 +347,10 @@ class LuigisboxSearchSuite extends Plugin
         }
 
         $queryBuilder = $this->container->get('dbal_connection')->createQueryBuilder();
-        $queryBuilder->select('*')
+        $queryBuilder->select(' * ')
             ->from('s_core_rewrite_urls')
             ->where('org_path = :path')
-            ->setParameter(':path', 'sViewport=cat&sCategory=' . $id);
+            ->setParameter(':path', 'sViewport = cat & sCategory = ' . $id);
 
         $data = $queryBuilder->execute()->fetch();
 
@@ -453,11 +425,11 @@ class LuigisboxSearchSuite extends Plugin
         return empty($value) && !is_numeric($value);
     }
 
-    // --------------------------------
-    // |                              |
-    // |   METHODS TO SET UP REQUEST  |
-    // |                              |
-    // --------------------------------
+// --------------------------------
+// |                              |
+// |   METHODS TO SET UP REQUEST  |
+// |                              |
+// --------------------------------
 
     public function appendTypeAndGenerationToData($data, $type, $generation)
     {
@@ -714,26 +686,11 @@ class LuigisboxSearchSuite extends Plugin
         return $success;
     }
 
-    public function singleContentUpdate($id)
-    {
-        $data = $this->getArticleData($id);
-
-        if (count($data) === 0) {
-            $this->writeLog("Luigi's Box product not found " . $id);
-            return;
-        }
-
-        if ($data[0]['enabled']) {
-            $this->contentRequest($data, self::TYPE_ITEM);
-        } else {
-            $this->contentDeleteRequest($data, self::TYPE_ITEM);
-        }
-    }
-
-
     private function writeLog($msg)
     {
         Shopware()->Container()->get('pluginlogger')->info($msg);
-        echo $msg . "\n";
+        $this->logs .= $msg . "\n";
+
+        //echo $msg . "<br>";
     }
 }

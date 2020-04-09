@@ -20,6 +20,7 @@ The plugin uses Guzzle Http 5.
 
 - `config.xml` - holds description of user interface and is picked by ShopWare to build the settings form of the plugin.
 - `cronjob.xml` - schedule a nightly cron job event syncing all the products to Luigi's Box backends. The plugin is subscribed to it.
+- `menu.xml` - Menu item for run indexing manually
 - `views` - contains the overriden template files.
 
 ## Installation
@@ -40,3 +41,7 @@ Once you completed these steps, you are done with the installation. Now please g
 Once configured, you can proceed with:
 - Clearing the cache `Configuration > Cache / Performance> Clear shop cache` or from commadline `php bin/console sw:cache:clear`
 - Run the initial synchronization of catalog manually via `php bin/console sw:cron:run Shopware_CronJob_SendToLuigisBoxApi`
+
+## Run indexing manually
+
+If plugin settings are configured the user can run manually the indexing from the menu: `Marketing > Luigi's Box Search Suite Indexing`

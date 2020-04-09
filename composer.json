@@ -1,7 +1,7 @@
 {
     "name": "luigisbox/search-suite-shopware",
     "type": "shopware-plugin",
-    "version": "0.0.1",
+    "version": "0.0.7",
     "description": "Luigi's Box Search Suite plugin for Shopware",
     "keywords": [
         "shopware",
