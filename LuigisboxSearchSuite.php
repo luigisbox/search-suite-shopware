@@ -625,7 +625,7 @@ class LuigisboxSearchSuite extends Plugin
         $success = true;
         $chunks = 0;
 
-        foreach (array_chunk($data, 500) as $chunk) {
+        foreach (array_chunk($data, 100) as $chunk) {
             $this->writeLog("Started with chunk: " . ($chunks + 1));
 
             try {
