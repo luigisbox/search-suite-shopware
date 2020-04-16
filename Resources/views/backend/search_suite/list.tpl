@@ -5,8 +5,8 @@
         <label for="lb-logs">Logs</label>
         <code>
             <textarea name="lb-logs" id="lb-logs" rows="10" class="form-control" disabled>
-                {if ($logs)}
-                    {$logs}
+                {if ($log)}
+                    {$log}
                 {/if}
             </textarea>
         </code>
