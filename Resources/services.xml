@@ -5,7 +5,7 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="luigisbox_search_suite.indexer" class="LuigisboxSearchSuite\Components\Indexer" />
+        <service id="luigisbox_search_suite.indexer" class="LuigisboxSearchSuiteShopware5\Components\Indexer" />
     </services>
 
 </container>

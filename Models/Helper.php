@@ -1,7 +1,7 @@
 <?php
 
 
-namespace LuigisboxSearchSuite\Models;
+namespace LuigisboxSearchSuiteShopware5\Models;
 
 
 class Helper

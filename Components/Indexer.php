@@ -1,13 +1,13 @@
 <?php
 
-namespace LuigisboxSearchSuite\Components;
+namespace LuigisboxSearchSuiteShopware5\Components;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Request;
 use GuzzleHttp\Stream\Stream;
 use Shopware\Components\Routing\Context;
 use Shopware\Models\Article\Article;
-use LuigisboxSearchSuite\Models\Helper as H;
+use LuigisboxSearchSuiteShopware5\Models\Helper as H;
 use Shopware\Models\Shop\Shop;
 
 class Indexer
@@ -69,17 +69,17 @@ class Indexer
 
     public function isEnabled()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::SYNC_ENABLED_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::SYNC_ENABLED_KEY);
     }
 
     public function getApiKey()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::API_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::API_KEY);
     }
 
     public function getTrackerId()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::TRACKER_ID_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::TRACKER_ID_KEY);
     }
 
     public function getLogFilePath()

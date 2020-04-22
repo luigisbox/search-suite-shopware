@@ -1,8 +1,15 @@
 {
-    "name": "luigisbox/search-suite-shopware",
+    "name": "luigisbox/search-suite-shopware5",
     "type": "shopware-plugin",
-    "version": "0.1.0",
-    "description": "Luigi's Box Search Suite plugin for Shopware",
+    "version": "0.1.1",
+    "description": "Luigi's Box Search Suite for Shopware 5",
+    "authors": [
+        {
+            "name": "Odyzeo spol. s r.o.",
+            "email": "info@odyzeo.com",
+            "role": "Lead Developer"
+        }
+    ],
     "keywords": [
         "shopware",
         "luigisbox"

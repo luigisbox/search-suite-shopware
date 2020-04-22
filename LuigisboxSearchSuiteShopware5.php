@@ -1,12 +1,12 @@
 <?php
 
-namespace LuigisboxSearchSuite;
+namespace LuigisboxSearchSuiteShopware5;
 
 use Shopware\Components\Plugin;
-use LuigisboxSearchSuite\Models\Helper as H;
+use LuigisboxSearchSuiteShopware5\Models\Helper as H;
 
 
-class LuigisboxSearchSuite extends Plugin
+class LuigisboxSearchSuiteShopware5 extends Plugin
 {
     const SCRIPT_URL_KEY = 'luigisBoxScriptUrl';
     const SYNC_ENABLED_KEY = 'luigisBoxCatalogSynchronization';
@@ -54,22 +54,22 @@ class LuigisboxSearchSuite extends Plugin
 
     public function isEnabled()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::SYNC_ENABLED_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::SYNC_ENABLED_KEY);
     }
 
     public function getApiKey()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::API_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::API_KEY);
     }
 
     public function getTrackerId()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::TRACKER_ID_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::TRACKER_ID_KEY);
     }
 
     public function getScriptUrl()
     {
-        return Shopware()->Config()->getByNamespace('LuigisBoxSearchSuite', self::SCRIPT_URL_KEY);
+        return Shopware()->Config()->getByNamespace('LuigisboxSearchSuiteShopware5', self::SCRIPT_URL_KEY);
     }
 
     public function getLogFilePath()

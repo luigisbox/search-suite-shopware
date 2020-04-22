@@ -4,13 +4,13 @@
 
     <label lang="en">Search Suite by Luigi's Box</label>
 
-    <version>1.0.0</version>
+    <version>0.1.1</version>
     <copyright>(c) by Odyzeo spol. s r.o.</copyright>
     <link>https://store.shopware.com/en</link>
     <author>Odyzeo spol. s r.o.</author>
     <compatibility minVersion="5.4.0"/>
 
-    <changelog version="1.0.0">
+    <changelog version="0.1.1">
         <changes lang="en">First release</changes>
     </changelog>
 
