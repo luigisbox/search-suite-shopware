@@ -36,25 +36,15 @@ class Shopware_Controllers_Backend_SearchSuite extends Enlight_Controller_Action
 
     public function listAction()
     {
-        $filePath = $this->getLogFilePath();
+        $db = Shopware()->Db();
+        $nextTime = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-        if (!$this->isConfigured() || H::isIndexRunning($filePath)) {
-            $this->writeLog('Prevent indexing.');
-            return;
-        }
+        $sql = "UPDATE s_crontab c SET c.next = '$nextTime' WHERE c.action = 'Shopware_CronJob_SendToLuigisBoxApi'";
 
-        H::markIndexRunning($filePath);
-
-        $filePath = $this->getLogFilePath();
-
-        $this->indexer = $this->container->get('luigisbox_search_suite.indexer');
-        $this->indexer->setFilePath($filePath);
-        $success = $this->indexer->allContentUpdate();
-
-        H::markIndexFinished($filePath);
+        $db->query($sql);
 
         $this->View()->assign([
-            'log' => $success ? 'Successfully updated all content.' : 'Failed to update content.',
+            'log' => 'Cron had been scheduled for running.',
         ]);
     }
 
@@ -113,6 +103,6 @@ class Shopware_Controllers_Backend_SearchSuite extends Enlight_Controller_Action
 
     private function writeLog($msg)
     {
-        Shopware()->Container()->get('pluginlogger')->info($msg);
+        Shopware()->Container()->get('pluginlogger')->error($msg);
     }
 }

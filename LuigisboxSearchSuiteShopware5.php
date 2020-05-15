@@ -28,8 +28,8 @@ class LuigisboxSearchSuiteShopware5 extends Plugin
     {
         return [
             'Enlight_Controller_Action_PreDispatch' => 'addScript',
+            'Shopware_CronJob_UpdateLuigisBoxApi' => 'updateLastModifiedProducts',
             'Shopware_CronJob_SendToLuigisBoxApi' => 'sendProductsToLB',
-            'Enlight_Controller_Action_PostDispatch_Backend_Article' => 'singleProductUpdate'
         ];
     }
 
@@ -113,6 +113,26 @@ class LuigisboxSearchSuiteShopware5 extends Plugin
         }
     }
 
+    public function updateLastModifiedProducts(\Shopware_Components_Cron_CronJob $job)
+    {
+        $filePath = $this->getLogFilePath();
+        $fromDate = $job->get('job')->end; // last execution
+
+        if (!$this->isConfigured() || H::isIndexRunning($filePath)) {
+            $this->writeLog('Prevent updating.');
+            return;
+        }
+
+        try {
+            $filePath = $this->getLogFilePath();
+            $this->indexer = $this->container->get('luigisbox_search_suite.indexer');
+            $this->indexer->setFilePath($filePath);
+            $this->indexer->updateLastChanged($fromDate);
+        } catch (\Exception $exception) {
+            $this->writeLog($exception->getMessage());
+        }
+    }
+
 
     public function sendProductsToLB(\Shopware_Components_Cron_CronJob $job)
     {
@@ -136,6 +156,5 @@ class LuigisboxSearchSuiteShopware5 extends Plugin
     private function writeLog($msg)
     {
         Shopware()->Container()->get('pluginlogger')->info($msg);
-        echo $msg . "\n";
     }
 }

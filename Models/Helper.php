@@ -109,7 +109,6 @@ class Helper
     private static function writeLog($msg)
     {
         Shopware()->Container()->get('pluginlogger')->info($msg);
-        error_log($msg);
     }
 
 }

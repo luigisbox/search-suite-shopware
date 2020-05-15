@@ -8,6 +8,7 @@ use GuzzleHttp\Stream\Stream;
 use Shopware\Components\Routing\Context;
 use Shopware\Models\Article\Article;
 use LuigisboxSearchSuiteShopware5\Models\Helper as H;
+use Shopware\Models\Order\Order;
 use Shopware\Models\Shop\Shop;
 
 class Indexer
@@ -103,29 +104,88 @@ class Indexer
         }
     }
 
+    public function updateLastChanged($from)
+    {
+        $fromDate = $from->toString(\Zend_Date::ISO_8601);
+        $fromDateSql = Shopware()->Db()->quote($fromDate);
 
-    private function getArticleData($id = null)
+        $sql = "SELECT id, a.changetime FROM s_articles a WHERE a.changetime >= $fromDateSql";
+
+        $lastChangedIdsQueryResults = Shopware()->Container()->get('dbal_connection')->query($sql)->fetchAll();
+
+        $fromDate = $from->setTimeZone('UTC')->toString(\Zend_Date::ISO_8601);
+        $fromDateSql = Shopware()->Db()->quote($fromDate);
+
+        $sql = "SELECT articleID, o.changed FROM s_order o
+            INNER JOIN s_order_details d ON o.id = d.orderID
+            WHERE o.changed >= $fromDateSql";
+
+        $lastOrderedQueryResults = Shopware()->Container()->get('dbal_connection')->query($sql)->fetchAll();
+
+        $lastChangedIds = array_column($lastChangedIdsQueryResults, 'id');
+        $lastOrderedIds = array_column($lastOrderedQueryResults, 'articleID');
+        $updateIds = [];
+
+        if ($lastChangedIds === null && $lastOrderedIds === null) {
+            return;
+        } else if ($lastChangedIds === null) {
+            $updateIds = array_unique($lastOrderedIds);
+        } else if ($lastOrderedIds === null) {
+            $updateIds = array_unique($lastChangedIds);
+        } else {
+            $updateIds = array_unique(array_merge($lastChangedIds, $lastOrderedIds));
+        }
+
+        $this->writeLog('IDS TO UPDATE: ' . json_encode($updateIds), true);
+        $productsData = $this->getArticleData($updateIds);
+
+        if (count($productsData) === 0) {
+            return;
+        }
+
+        foreach ($productsData as $productData) {
+            $this->writeLog('SENDING TO API: ' . json_encode($productData), true);
+            if ($productData['enabled']) {
+                $this->contentRequest([$productData], self::TYPE_ITEM);
+            } else {
+                $this->contentDeleteRequest([$productData], self::TYPE_ITEM);
+            }
+        }
+    }
+
+
+    private function getArticleData($article = null)
     {
         $mediaService = Shopware()->Container()->get('shopware_media.media_service');
         $shopContext = $this->getShopContext();
         $shopRouter = $this->getArticleRouter($shopContext);
-
         $properties = $this->getPropertiesOptions();
         $attributes = $this->getAttributeOptions();
-        $productIDs = $this->getProductIds();
         $categories = $this->getCategories($shopRouter);
 
         $data = [];
 
-        $this->writeLog("Loading article data started");
+        $this->writeLog("Loading article data started", false);
 
-        if (!is_null($id)) {
-            $product = $this->getApiOne($id);
-            $data[] = $this->processData($product, $mediaService, $properties, $attributes, $categories, $shopRouter);
+        if (!is_null($article)) {
+            if (is_array($article)) {
+                foreach ($article as $lastChangedId) {
+                    if ($lastChangedId) {
+                        $product = $this->getApiOne($lastChangedId);
+                        $data[] = $this->processData($product, $mediaService, $properties, $attributes, $categories, $shopRouter);
+                    }
+                }
 
-            return $data;
+                return $data;
+            } else {
+                $product = $this->getApiOne($article);
+                $data[] = $this->processData($product, $mediaService, $properties, $attributes, $categories, $shopRouter);
+
+                return $data;
+            }
         }
 
+        $productIDs = $this->getProductIds();
         foreach ($productIDs as $productID) {
             $product = $this->getApiOne($productID->getId());
 
@@ -145,7 +205,9 @@ class Indexer
             'type' => self::TYPE_ITEM,
             'fields' => [
                 'title' => $product['name'],
-                'availability' => $product['mainDetail']['active'] && $product['mainDetail']['inStock'] > 0 ? 1 : 0,
+                'availability' => $product['mainDetail']['lastStock'] // on sale checkbox
+                    ? ($product['mainDetail']['active'] && $product['mainDetail']['inStock'] > 0 ? 1 : 0)
+                    : ($product['mainDetail']['active'] ? 1 : 0),
             ],
             'enabled' => $product['mainDetail']['active'],
             'nested' => [],
@@ -571,7 +633,7 @@ class Indexer
     public function allContentUpdate()
     {
         $this->success = false;
-        $this->writeLog("Luigi's Box product update start.");
+        $this->writeLog("Luigi's Box product update start.", false);
 
         $data = $this->getArticleData();
 
@@ -579,7 +641,7 @@ class Indexer
 
         $this->success = $this->contentRequest($data, self::TYPE_ITEM, $generation, [self::TYPE_CATEGORY]);
 
-        $this->writeLog("Luigi's Box product update end.");
+        $this->writeLog("Luigi's Box product update end.", false);
 
         return $this->success;
     }
@@ -598,7 +660,7 @@ class Indexer
         $invalidCount = 0;
 
         foreach (array_chunk($data, self::CHUNK_SIZE) as $chunk) {
-            $this->writeLog("Started with chunk: " . ($chunks + 1));
+            $this->writeLog("Started with chunk: " . ($chunks + 1), false);
 
             try {
                 $client = new Client();
@@ -683,7 +745,7 @@ class Indexer
         }
 
         if ($success && $validRatio >= self::COMMIT_RATIO) {
-            $this->writeLog("Luigi's Box content generation {$generation} committed");
+            $this->writeLog("Luigi's Box content generation {$generation} committed", false);
         }
 
         return $success && $validRatio >= self::COMMIT_RATIO;
@@ -718,11 +780,12 @@ class Indexer
         return $success;
     }
 
-    private function writeLog($msg)
+    private function writeLog($msg, $isError = true)
     {
-        //Shopware()->Container()->get('pluginlogger')->info($msg);
-        if ($this->logEnabled) {
-            echo $msg . "\n";
+        if ($isError) {
+            Shopware()->Container()->get('pluginlogger')->error($msg);
+        } else {
+            Shopware()->Container()->get('pluginlogger')->info($msg);
         }
     }
 }
