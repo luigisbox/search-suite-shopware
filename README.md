@@ -26,14 +26,14 @@ The plugin uses Guzzle Http 5.
 ## Installation
 
 - Be sure that `Cron` plugin is active in Shopware. Open Plugin Manager (Ctrl+Alt+P) and then check, that "Cron" by "Shopware AG" is among installed & active plugins.
-- Require plugin from composer `composer require luigisbox/search-suite-shopware`
+- Require plugin from composer `composer require luigisbox/search-suite-shopware5`
 - Refresh plugin list and activate via command line or from backend.
 
 ```
 $ php ./bin/console sw:plugin:refresh
 Successfully refreshed
 
-$ php ./bin/console sw:plugin:install --activate luigisbox/search-suite-shopware
+$ php ./bin/console sw:plugin:install --activate luigisbox/search-suite-shopware5
 ```
 
 Once you completed these steps, you are done with the installation. Now please go to configuration of the plugin via Plugin Manager and configure the plugin there.
