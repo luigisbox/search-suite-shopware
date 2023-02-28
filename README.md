@@ -1,8 +1,12 @@
-# Luigi's Box Search Suite plugin for Shopware
+# Luigi's Box Search Suite plugin for Shopware5 - development preview
 
 Luigi's Box is an Award Winning Search Solution for eCommerce, providing Search Analytics and Search as a Service.
 
 This repository holds composer package of a Shopware 5 plugin, providing integration between Shopware store & Luigi's Box services. To use it, you need to have an account on Luigi's Box platform. Go and create one if you do not have it already.
+
+
+!!! This solution is not meant to be production-ready. Use it as an inspiration how synchronization between Luigi's Box and Shopware5 can be achieved.
+
 
 ## Basic info
 
